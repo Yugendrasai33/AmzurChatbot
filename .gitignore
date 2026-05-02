@@ -1,0 +1,75 @@
+# ──────────────────────────────
+# Python / Backend
+# ──────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+coverage/
+*.cover
+.coverage
+
+# ──────────────────────────────
+# Node / Frontend
+# ──────────────────────────────
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.output/
+.cache/
+*.tsbuildinfo
+
+# ──────────────────────────────
+# Environment / secrets
+# ──────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ──────────────────────────────
+# Logs
+# ──────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ──────────────────────────────
+# OS
+# ──────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ──────────────────────────────
+# IDE / editors
+# ──────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ──────────────────────────────
+# Misc project-specific
+# ──────────────────────────────
+chroma_db/
+uploads/
+
+# Exclude GCP / service account key files explicitly
+*-credentials.json
+*-service-account*.json
+micro-territory-*.json
+Backend/micro-territory-*.json

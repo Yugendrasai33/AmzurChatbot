@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+    --canvas: #f4efe6;
+    --surface: #fffdf8;
+    --surface-strong: #fff8ee;
+    --line: #e7dac7;
+    --text-main: #211c15;
+    --text-soft: #6f6352;
+    --accent: #0f766e;
+    --accent-strong: #115e59;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Sora", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at 10% 0%, rgba(13, 148, 136, 0.18) 0, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(180, 83, 9, 0.14) 0, transparent 42%),
+        linear-gradient(180deg, #faf5ed 0%, #f3ebdf 45%, #efe6d8 100%);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 2px solid #f8efe2;
+    background: #ccb89f;
+}
+
+::-webkit-scrollbar-track {
+    background: #f8efe2;
+}

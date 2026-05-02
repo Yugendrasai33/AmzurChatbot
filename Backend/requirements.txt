@@ -1,0 +1,37 @@
+# FastAPI & Server
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic-settings
+
+# Database
+sqlalchemy[asyncio]
+asyncpg
+alembic
+
+# Auth
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+
+# AI - LangChain
+langchain
+langchain-openai
+langgraph
+
+# AI - Direct SDK
+openai
+
+# Vector Store
+chromadb
+
+# File handling
+python-multipart
+python-magic
+
+# Validation
+pydantic
+
+# Testing
+pytest
+pytest-asyncio
