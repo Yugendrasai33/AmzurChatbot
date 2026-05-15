@@ -44,32 +44,32 @@ export default function LoginPage({ onAuthenticated, initialError = null }: Logi
     };
 
     return (
-        <main className="relative min-h-screen overflow-hidden p-4 sm:p-8">
-            <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-teal-300/35 blur-3xl sm:h-56 sm:w-56" />
-            <div className="pointer-events-none absolute -right-12 bottom-10 h-44 w-44 rounded-full bg-amber-300/35 blur-3xl sm:h-60 sm:w-60" />
+        <main className="flex min-h-screen items-center justify-center bg-white px-4">
+            <div className="w-full max-w-sm">
+                <div className="mb-8 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-(--text-main) text-sm font-bold text-white">AI</div>
+                    <h1 className="mt-4 text-xl font-semibold text-(--text-main)">
+                        {isSignup ? "Create your account" : "Welcome back"}
+                    </h1>
+                    <p className="mt-1 text-sm text-(--text-soft)">Sign in to continue to Amzur AI Chat</p>
+                </div>
 
-            <div className="relative mx-auto max-w-md rounded-3xl border border-(--line) bg-(--surface)/90 p-6 shadow-[0_22px_70px_rgba(32,21,10,0.14)] sm:p-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-(--text-soft)">Stackyon Employee Portal</p>
-                <h1 className="mt-2 text-2xl font-semibold text-(--text-main)">
-                    {isSignup ? "Create account" : "Welcome back"}
-                </h1>
-
-                <form onSubmit={handleSubmit} className="mt-6 space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-3">
                     {isSignup && (
                         <input
                             type="text"
                             placeholder="Full name"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="w-full rounded-xl border border-(--line) bg-white px-4 py-3 text-sm outline-none focus:border-teal-600"
+                            className="w-full rounded-lg border border-(--line) px-3 py-2.5 text-sm outline-none transition focus:border-(--text-main) focus:ring-1 focus:ring-(--text-main)"
                         />
                     )}
                     <input
                         type="email"
-                        placeholder="Employee email"
+                        placeholder="Email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-xl border border-(--line) bg-white px-4 py-3 text-sm outline-none focus:border-teal-600"
+                        className="w-full rounded-lg border border-(--line) px-3 py-2.5 text-sm outline-none transition focus:border-(--text-main) focus:ring-1 focus:ring-(--text-main)"
                         required
                     />
                     <input
@@ -77,22 +77,22 @@ export default function LoginPage({ onAuthenticated, initialError = null }: Logi
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full rounded-xl border border-(--line) bg-white px-4 py-3 text-sm outline-none focus:border-teal-600"
+                        className="w-full rounded-lg border border-(--line) px-3 py-2.5 text-sm outline-none transition focus:border-(--text-main) focus:ring-1 focus:ring-(--text-main)"
                         required
                     />
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    {error && <p className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700">{error}</p>}
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full rounded-xl bg-(--accent) py-3 text-sm font-semibold text-white transition hover:bg-(--accent-strong) disabled:opacity-40"
+                        className="w-full rounded-lg bg-(--text-main) py-2.5 text-sm font-medium text-white transition hover:bg-black disabled:opacity-40"
                     >
-                        {isLoading ? "Please wait..." : isSignup ? "Sign up" : "Log in"}
+                        {isLoading ? "Please wait..." : isSignup ? "Sign up" : "Continue"}
                     </button>
                 </form>
 
-                <div className="my-4 flex items-center gap-3">
+                <div className="my-5 flex items-center gap-3">
                     <div className="h-px flex-1 bg-(--line)" />
-                    <span className="text-xs uppercase tracking-[0.2em] text-(--text-soft)">or</span>
+                    <span className="text-xs text-(--text-muted)">or</span>
                     <div className="h-px flex-1 bg-(--line)" />
                 </div>
 
@@ -101,18 +101,20 @@ export default function LoginPage({ onAuthenticated, initialError = null }: Logi
                     onClick={() => {
                         window.location.href = authApi.googleLoginUrl();
                     }}
-                    className="w-full rounded-xl border border-(--line) bg-white py-3 text-sm font-semibold text-(--text-main) transition hover:border-amber-300 hover:bg-amber-50"
+                    className="w-full rounded-lg border border-(--line) py-2.5 text-sm font-medium text-(--text-main) transition hover:bg-(--surface-soft)"
                 >
                     Continue with Google
                 </button>
 
-                <button
-                    type="button"
-                    onClick={() => setIsSignup((prev) => !prev)}
-                    className="mt-4 text-sm text-(--text-soft) underline-offset-2 hover:text-(--text-main) hover:underline"
-                >
-                    {isSignup ? "Already have an account? Log in" : "No account? Sign up"}
-                </button>
+                <p className="mt-5 text-center text-sm text-(--text-soft)">
+                    <button
+                        type="button"
+                        onClick={() => setIsSignup((prev) => !prev)}
+                        className="font-medium text-(--text-main) underline-offset-4 hover:underline"
+                    >
+                        {isSignup ? "Already have an account? Log in" : "Don't have an account? Sign up"}
+                    </button>
+                </p>
             </div>
         </main>
     );

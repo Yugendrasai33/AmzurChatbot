@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.db.base import Base
-from app.models import ChatMessage, ChatThread, Profile  # noqa: F401
+from app.models import Attachment, ChatMessage, ChatThread, Profile  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

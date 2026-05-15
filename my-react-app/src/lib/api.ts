@@ -1,9 +1,14 @@
 import axios from "axios";
 import {
+    type AttachmentMeta,
     type AuthResponse,
     type AuthUser,
     type ChatMessage,
     type ChatSendResponse,
+    type ImageEditRequest,
+    type ImageGenerationRequest,
+    type IngestResponse,
+    type SqlResultData,
     type Thread,
 } from "../types";
 
@@ -60,9 +65,179 @@ export const chatApi = {
         const { data } = await api.get<ChatMessage[]>(`/chat/threads/${threadId}/messages`);
         return data;
     },
-    sendMessage: async (payload: { message: string; thread_id?: string | null }) => {
+    sendMessage: async (payload: { message: string; thread_id?: string | null; attachment_ids?: string[] }) => {
         const { data } = await api.post<ChatSendResponse>("/chat/messages", payload);
         return data;
+    },
+    uploadFile: async (file: File): Promise<AttachmentMeta> => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const { data } = await api.post<AttachmentMeta>("/chat/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return data;
+    },
+    generateImage: async (prompt: string, threadId?: string | null): Promise<AttachmentMeta> => {
+        const payload: ImageGenerationRequest = { prompt, thread_id: threadId ?? null };
+        const { data } = await api.post<AttachmentMeta>("/chat/generate-image", payload);
+        return data;
+    },
+    editImage: async (attachmentId: string, editPrompt: string, threadId?: string | null): Promise<AttachmentMeta> => {
+        const payload: ImageEditRequest = { attachment_id: attachmentId, edit_prompt: editPrompt, thread_id: threadId ?? null };
+        const { data } = await api.post<AttachmentMeta>("/chat/edit-image", payload);
+        return data;
+    },
+};
+
+export const ragApi = {
+    ingestAttachment: async (attachmentId: string): Promise<IngestResponse> => {
+        const { data } = await api.post<IngestResponse>(`/rag/ingest/${attachmentId}`);
+        return data;
+    },
+
+    streamRag: async (
+        threadId: string,
+        message: string,
+        onToken: (token: string) => void,
+        onSources?: (sources: string[]) => void,
+        attachmentIds?: string[],
+    ): Promise<void> => {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch("/api/rag/stream", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+                thread_id: threadId,
+                message,
+                attachment_ids: attachmentIds?.length ? attachmentIds : undefined,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => null);
+            const detail = errorBody?.detail;
+            const msg = typeof detail === "string"
+                ? detail
+                : detail?.message ?? "RAG query failed.";
+            throw new Error(msg);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response stream available.");
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const payload = line.slice(6);
+                if (payload === "[DONE]") return;
+                // Check for error marker
+                if (payload.startsWith("[ERROR] ")) {
+                    throw new Error(payload.slice(8));
+                }
+                // Check for sources marker
+                if (payload.includes("[SOURCES]")) {
+                    const idx = payload.indexOf("[SOURCES]");
+                    const textBefore = payload.slice(0, idx);
+                    if (textBefore) onToken(textBefore);
+                    const sourcesJson = payload.slice(idx + "[SOURCES]".length);
+                    try {
+                        const sources = JSON.parse(sourcesJson);
+                        if (onSources) onSources(sources);
+                    } catch { /* ignore parse errors */ }
+                    continue;
+                }
+                onToken(payload);
+            }
+        }
+    },
+};
+
+export const sqlApi = {
+    streamQuery: async (
+        threadId: string,
+        question: string,
+        onToken: (token: string) => void,
+        onSql?: (sqlQuery: string) => void,
+        onSqlResult?: (result: SqlResultData) => void,
+    ): Promise<void> => {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch("/api/sql/query", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ thread_id: threadId, question }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => null);
+            const detail = errorBody?.detail;
+            const msg = typeof detail === "string"
+                ? detail
+                : detail?.message ?? "Database query failed.";
+            throw new Error(msg);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response stream available.");
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const payload = line.slice(6);
+                if (payload === "[DONE]") return;
+                if (payload.startsWith("[ERROR] ")) {
+                    throw new Error(payload.slice(8));
+                }
+                if (payload.includes("[SQL]")) {
+                    const idx = payload.indexOf("[SQL]");
+                    const textBefore = payload.slice(0, idx);
+                    if (textBefore) onToken(textBefore);
+                    const sqlJson = payload.slice(idx + "[SQL]".length);
+                    try {
+                        const sqlQuery = JSON.parse(sqlJson);
+                        if (onSql) onSql(sqlQuery);
+                    } catch { /* ignore parse errors */ }
+                    continue;
+                }
+                if (payload.includes("[SQL_RESULT]")) {
+                    const idx = payload.indexOf("[SQL_RESULT]");
+                    const textBefore = payload.slice(0, idx);
+                    if (textBefore) onToken(textBefore);
+                    const resultJson = payload.slice(idx + "[SQL_RESULT]".length);
+                    try {
+                        const result = JSON.parse(resultJson) as SqlResultData;
+                        if (onSqlResult) onSqlResult(result);
+                    } catch { /* ignore parse errors */ }
+                    continue;
+                }
+                onToken(payload);
+            }
+        }
     },
 };
 

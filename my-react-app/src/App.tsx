@@ -62,7 +62,7 @@ function App() {
   }, []);
 
   if (isBootstrapping) {
-    return <div className="p-8 text-(--text-main)">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center text-sm text-(--text-muted)">Loading...</div>;
   }
 
   if (!user) {

@@ -1,3 +1,28 @@
+export interface AttachmentMeta {
+    id: string;
+    filename: string;
+    mime_type: string;
+    size_bytes: number;
+    type_category: "image" | "video" | "pdf" | "code" | "table" | "generated_image";
+    url: string;
+}
+
+export interface ImageGenerationRequest {
+    prompt: string;
+    thread_id?: string | null;
+}
+
+export interface ImageEditRequest {
+    attachment_id: string;
+    edit_prompt: string;
+    thread_id?: string | null;
+}
+
+export interface SqlResultData {
+    columns: string[];
+    rows: string[][];
+}
+
 export interface ChatMessage {
     id: string;
     role: "user" | "assistant";
@@ -5,6 +30,10 @@ export interface ChatMessage {
     thread_id?: string;
     model?: string | null;
     created_at?: string;
+    attachments?: AttachmentMeta[];
+    sources?: string[];
+    sql_query?: string;
+    sql_result?: SqlResultData;
 }
 
 export interface ChatRequest {
@@ -37,8 +66,30 @@ export interface AuthUser {
     full_name?: string | null;
 }
 
+export interface IngestResponse {
+    attachment_id: string;
+    chunks_ingested: number;
+}
+
+export interface RagQueryRequest {
+    thread_id: string;
+    message: string;
+    attachment_ids?: string[];
+}
+
 export interface AuthResponse {
     access_token: string;
     refresh_token: string;
     user: AuthUser;
+}
+
+export interface SqlQueryRequest {
+    thread_id: string;
+    question: string;
+}
+
+export interface SqlQueryResponse {
+    answer: string;
+    sql_query: string;
+    thread_id: string;
 }

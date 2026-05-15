@@ -17,6 +17,7 @@ httpx
 # AI - LangChain
 langchain
 langchain-openai
+langchain-community
 langgraph
 
 # AI - Direct SDK
@@ -28,6 +29,14 @@ chromadb
 # File handling
 python-multipart
 python-magic
+PyPDF2
+pypdf
+openpyxl
+python-docx
+unstructured[xlsx]
+
+# Synchronous DB driver for LangChain SQL agent
+psycopg2-binary
 
 # Validation
 pydantic

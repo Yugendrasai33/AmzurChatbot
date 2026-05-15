@@ -42,9 +42,24 @@ class Settings(BaseSettings):
     # Google Sheets
     GOOGLE_SERVICE_ACCOUNT_JSON: Optional[str] = None
 
+    # NL-to-SQL
+    SQL_QUERY_ALLOWED_TABLES: str = "chat_threads,chat_messages,profiles,attachments"
+
+    # Conversational memory
+    MEMORY_WINDOW_SIZE: int = 5  # number of recent exchanges sent to LLM
+
     # File uploads
     MAX_UPLOAD_MB: int = 20
     UPLOAD_DIR: str = "./uploads"
+    # Note: generated_image files are created server-side and do not rely on upload MIME allow-list.
+    ALLOWED_UPLOAD_MIMES: str = (
+        "image/jpeg,image/png,image/gif,image/webp,"
+        "video/mp4,video/webm,video/quicktime,"
+        "application/pdf,"
+        "text/plain,text/x-python,text/javascript,text/html,text/css,text/markdown,application/json,"
+        "text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,"
+        "application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

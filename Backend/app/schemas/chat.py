@@ -1,8 +1,22 @@
 from pydantic import BaseModel
 
+from app.schemas.attachment import AttachmentMeta
+
 
 class ChatRequest(BaseModel):
     message: str
+    thread_id: str | None = None
+    attachment_ids: list[str] | None = None
+
+
+class ImageGenerationRequest(BaseModel):
+    prompt: str
+    thread_id: str | None = None
+
+
+class ImageEditRequest(BaseModel):
+    attachment_id: str
+    edit_prompt: str
     thread_id: str | None = None
 
 
@@ -33,6 +47,7 @@ class ChatMessageResponse(BaseModel):
     content: str
     model: str | None = None
     created_at: str
+    attachments: list[AttachmentMeta] | None = None
 
 
 class ChatSendResponse(BaseModel):
