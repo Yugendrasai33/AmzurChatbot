@@ -1,4 +1,5 @@
 import axios from "axios";
+import { z } from "zod";
 import {
     type AttachmentMeta,
     type AuthResponse,
@@ -8,6 +9,9 @@ import {
     type ImageEditRequest,
     type ImageGenerationRequest,
     type IngestResponse,
+    type ResearchEvent,
+    type ResearchMeta,
+    type ResearchSection,
     type SheetMetaData,
     type SqlResultData,
     type Thread,
@@ -310,6 +314,112 @@ export const sheetsApi = {
                     continue;
                 }
                 onToken(payload + "\n");
+            }
+        }
+    },
+};
+
+// ----------------------------------------------------------------------
+// Research (Project 10) — SSE stream of decompose → search → synthesize.
+// Payloads are newline-delimited JSON ResearchEvent objects, validated
+// with zod before being passed to callbacks.
+// ----------------------------------------------------------------------
+
+const researchSectionIdSchema = z.enum([
+    "overview",
+    "key_papers",
+    "themes",
+    "gaps",
+    "future",
+    "references",
+    "error",
+]);
+
+const researchEventSchema = z.discriminatedUnion("event", [
+    z.object({ event: z.literal("status"), message: z.string() }),
+    z.object({
+        event: z.literal("section"),
+        id: researchSectionIdSchema,
+        title: z.string(),
+        content: z.string(),
+    }),
+    z.object({
+        event: z.literal("done"),
+        total_papers: z.number(),
+        coverage: z.number(),
+    }),
+]);
+
+export const researchApi = {
+    streamResearch: async (
+        threadId: string,
+        topic: string,
+        onStatus: (message: string) => void,
+        onSection: (section: ResearchSection) => void,
+        onDone: (meta: ResearchMeta) => void,
+        onError: (message: string) => void,
+    ): Promise<void> => {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch("/api/research/query", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            credentials: "include",
+            body: JSON.stringify({ thread_id: threadId, topic }),
+        });
+
+        if (!response.ok) {
+            const detail = await response.json().then((d) => d.detail).catch(() => null);
+            const msg = typeof detail === "string"
+                ? detail
+                : detail?.message ?? "Research request failed.";
+            throw new Error(msg);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response stream available.");
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const payload = line.slice(6);
+                if (!payload) continue;
+                if (payload === "[DONE]") return;
+                if (payload.startsWith("[ERROR] ")) {
+                    onError(payload.slice(8));
+                    continue;
+                }
+
+                let parsed: unknown;
+                try {
+                    parsed = JSON.parse(payload);
+                } catch {
+                    continue;
+                }
+
+                const result = researchEventSchema.safeParse(parsed);
+                if (!result.success) continue;
+                const evt: ResearchEvent = result.data;
+
+                if (evt.event === "status") {
+                    onStatus(evt.message);
+                } else if (evt.event === "section") {
+                    onSection({ id: evt.id, title: evt.title, content: evt.content });
+                } else if (evt.event === "done") {
+                    onDone({ total_papers: evt.total_papers, coverage: evt.coverage });
+                }
             }
         }
     },

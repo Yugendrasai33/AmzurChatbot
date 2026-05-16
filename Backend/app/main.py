@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.rag import router as rag_router
+from app.api.research import router as research_router
 from app.api.sheets import router as sheets_router
 from app.api.sql import router as sql_router
 from app.api.threads import router as threads_router
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(rag_router)
+app.include_router(research_router)
 app.include_router(sheets_router)
 app.include_router(sql_router)
 app.include_router(threads_router)

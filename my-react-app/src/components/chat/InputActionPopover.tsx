@@ -7,10 +7,12 @@ interface InputActionPopoverProps {
     onDocSearch: () => void;
     onDbQuery: () => void;
     onSheetAnalyze: () => void;
+    onResearch: () => void;
     onClose: () => void;
     ragMode?: boolean;
     sqlMode?: boolean;
     sheetsMode?: boolean;
+    researchMode?: boolean;
 }
 
 export function InputActionPopover({
@@ -20,10 +22,12 @@ export function InputActionPopover({
     onDocSearch,
     onDbQuery,
     onSheetAnalyze,
+    onResearch,
     onClose,
     ragMode,
     sqlMode,
     sheetsMode,
+    researchMode,
 }: InputActionPopoverProps) {
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +78,11 @@ export function InputActionPopover({
 
     const handleSheetAnalyze = () => {
         onSheetAnalyze();
+        onClose();
+    };
+
+    const handleResearch = () => {
+        onResearch();
         onClose();
     };
 
@@ -148,6 +157,20 @@ export function InputActionPopover({
                 </svg>
                 Analyze spreadsheet
                 {sheetsMode && <span className="ml-auto text-xs text-green-400">✓</span>}
+            </button>
+            <div className="mx-2 h-px bg-(--line)" />
+            <button
+                type="button"
+                role="menuitem"
+                onClick={handleResearch}
+                className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-(--surface-soft) ${researchMode ? "text-amber-600 font-medium" : "text-(--text-main)"}`}
+            >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={researchMode ? "text-amber-500" : "text-(--text-muted)"}>
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                Research papers
+                {researchMode && <span className="ml-auto text-xs text-amber-400">✓</span>}
             </button>
         </div>
     );

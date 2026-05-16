@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import axios from "axios";
-import { chatApi, ragApi, sqlApi, sheetsApi } from "../lib/api";
-import { type AttachmentMeta, type ChatMessage, type Thread } from "../types";
+import { chatApi, ragApi, researchApi, sqlApi, sheetsApi } from "../lib/api";
+import { type AttachmentMeta, type ChatMessage, type ResearchSection, type Thread } from "../types";
 
 export function useChat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -13,6 +13,7 @@ export function useChat() {
     const [ragMode, setRagMode] = useState(false);
     const [sqlMode, setSqlMode] = useState(false);
     const [sheetsMode, setSheetsMode] = useState(false);
+    const [researchMode, setResearchMode] = useState(false);
     const hasAutoSelectedInitialThread = useRef(false);
     const skipNextLoadRef = useRef(false);
 
@@ -156,21 +157,28 @@ export function useChat() {
 
     const toggleRagMode = useCallback(() => {
         setRagMode((prev) => {
-            if (!prev) { setSqlMode(false); setSheetsMode(false); }
+            if (!prev) { setSqlMode(false); setSheetsMode(false); setResearchMode(false); }
             return !prev;
         });
     }, []);
 
     const toggleSqlMode = useCallback(() => {
         setSqlMode((prev) => {
-            if (!prev) { setRagMode(false); setSheetsMode(false); }
+            if (!prev) { setRagMode(false); setSheetsMode(false); setResearchMode(false); }
             return !prev;
         });
     }, []);
 
     const toggleSheetsMode = useCallback(() => {
         setSheetsMode((prev) => {
-            if (!prev) { setRagMode(false); setSqlMode(false); }
+            if (!prev) { setRagMode(false); setSqlMode(false); setResearchMode(false); }
+            return !prev;
+        });
+    }, []);
+
+    const toggleResearchMode = useCallback(() => {
+        setResearchMode((prev) => {
+            if (!prev) { setRagMode(false); setSqlMode(false); setSheetsMode(false); }
             return !prev;
         });
     }, []);
@@ -461,6 +469,116 @@ export function useChat() {
         }
     }, [selectedThreadId]);
 
+    const sendResearchMessage = useCallback(async (topic: string) => {
+        const cleaned = topic.trim();
+        if (!cleaned) return;
+
+        let threadId = selectedThreadId;
+        if (!threadId) {
+            try {
+                const newThread = await chatApi.createThread({ title: cleaned.slice(0, 50) });
+                threadId = newThread.id;
+                skipNextLoadRef.current = true;
+                setSelectedThreadId(threadId);
+                setThreads((prev) => [newThread, ...prev]);
+            } catch {
+                setErrorMessage("Failed to create a new thread.");
+                return;
+            }
+        }
+
+        const optimisticId = crypto.randomUUID();
+        const optimisticMessage: ChatMessage = {
+            id: optimisticId,
+            role: "user",
+            content: cleaned,
+        };
+        setMessages((prev) => [...prev, optimisticMessage]);
+        setIsLoading(true);
+        setErrorMessage(null);
+
+        try {
+            const assistantId = crypto.randomUUID();
+            const assistantMessage: ChatMessage = {
+                id: assistantId,
+                role: "assistant",
+                content: "",
+                research_sections: [],
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+
+            await researchApi.streamResearch(
+                threadId,
+                cleaned,
+                (status) => {
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.id === assistantId ? { ...m, research_status: status } : m
+                        )
+                    );
+                },
+                (section) => {
+                    setMessages((prev) =>
+                        prev.map((m) => {
+                            if (m.id !== assistantId) return m;
+                            const existing: ResearchSection[] = m.research_sections ?? [];
+                            const idx = existing.findIndex((s) => s.id === section.id);
+                            const next = idx === -1
+                                ? [...existing, section]
+                                : existing.map((s, i) => (i === idx ? section : s));
+                            return { ...m, research_sections: next };
+                        })
+                    );
+                },
+                (meta) => {
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.id === assistantId
+                                ? { ...m, research_meta: meta, research_status: undefined }
+                                : m
+                        )
+                    );
+                },
+                (errMsg) => {
+                    setMessages((prev) =>
+                        prev.map((m) => {
+                            if (m.id !== assistantId) return m;
+                            const existing: ResearchSection[] = m.research_sections ?? [];
+                            return {
+                                ...m,
+                                research_sections: [
+                                    ...existing,
+                                    { id: "error", title: "Error", content: errMsg },
+                                ],
+                            };
+                        })
+                    );
+                },
+            );
+
+            const latestThreads = await chatApi.listThreads();
+            setThreads(latestThreads);
+        } catch (error) {
+            const fallback = "Research request failed. Please try again.";
+            let nextError = fallback;
+            if (error instanceof Error) {
+                nextError = error.message || fallback;
+            } else if (axios.isAxiosError(error)) {
+                const detail = error.response?.data?.detail;
+                if (typeof detail === "string") nextError = detail;
+                else if (detail && typeof detail === "object")
+                    nextError = detail.message ?? detail.error ?? fallback;
+            }
+            setErrorMessage(nextError);
+            setMessages((prev) => [
+                ...prev.filter((m) => m.content !== "" || (m.research_sections && m.research_sections.length > 0)),
+                { id: crypto.randomUUID(), role: "assistant" as const, content: nextError },
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedThreadId]);
+
     const generateImage = useCallback(async (prompt: string) => {
         const cleaned = prompt.trim();
         if (!cleaned) return;
@@ -587,10 +705,12 @@ export function useChat() {
         ragMode,
         sqlMode,
         sheetsMode,
+        researchMode,
         sendMessage,
         sendRagMessage,
         sendSqlMessage,
         sendSheetsMessage,
+        sendResearchMessage,
         generateImage,
         editImage,
         clearMessages,
@@ -602,5 +722,6 @@ export function useChat() {
         toggleRagMode,
         toggleSqlMode,
         toggleSheetsMode,
+        toggleResearchMode,
     };
 }

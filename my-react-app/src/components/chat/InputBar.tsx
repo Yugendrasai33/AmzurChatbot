@@ -18,6 +18,8 @@ interface InputBarProps {
     sheetsMode?: boolean;
     onToggleSheets?: () => void;
     onSendSheets?: (message: string, sourceType: string, sheetUrl?: string) => void;
+    researchMode?: boolean;
+    onToggleResearch?: () => void;
 }
 
 export function InputBar({
@@ -34,6 +36,8 @@ export function InputBar({
     sheetsMode,
     onToggleSheets,
     onSendSheets,
+    researchMode,
+    onToggleResearch,
 }: InputBarProps) {
     const [input, setInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);
@@ -169,10 +173,12 @@ export function InputBar({
                                 onDocSearch={onToggleRag ?? (() => { })}
                                 onDbQuery={onToggleSql ?? (() => { })}
                                 onSheetAnalyze={onToggleSheets ?? (() => { })}
+                                onResearch={onToggleResearch ?? (() => { })}
                                 onClose={() => setPopoverOpen(false)}
                                 ragMode={ragMode}
                                 sqlMode={sqlMode}
                                 sheetsMode={sheetsMode}
+                                researchMode={researchMode}
                             />
                         )}
                     </div>
@@ -246,6 +252,25 @@ export function InputBar({
                         </div>
                     )}
 
+                    {/* Research mode tag */}
+                    {researchMode && !selectedImageId && !generateMode && (
+                        <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                            </svg>
+                            <span className="text-xs font-medium text-amber-700">Research papers</span>
+                            <button
+                                type="button"
+                                onClick={onToggleResearch}
+                                className="ml-0.5 text-amber-400 hover:text-amber-700"
+                                aria-label="Exit research mode"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
                     {/* Generate image mode tag */}
                     {generateMode && !selectedImageId && (
                         <div className="flex shrink-0 items-center gap-1 rounded-md bg-purple-50 px-2 py-1">
@@ -270,13 +295,15 @@ export function InputBar({
                             ? "Describe what to change…"
                             : (generateMode
                                 ? "Describe the image to generate…"
-                                : (sheetsMode
-                                    ? "Ask a question about the spreadsheet…"
-                                    : (sqlMode
-                                        ? "Ask a question about the database…"
-                                        : (ragMode
-                                            ? "Ask about your documents…"
-                                            : "Message Amzur AI…"))))}
+                                : (researchMode
+                                    ? "Enter a research topic…"
+                                    : (sheetsMode
+                                        ? "Ask a question about the spreadsheet…"
+                                        : (sqlMode
+                                            ? "Ask a question about the database…"
+                                            : (ragMode
+                                                ? "Ask about your documents…"
+                                                : "Message Amzur AI…")))))}
                         className="min-h-9 flex-1 bg-transparent px-1 text-sm text-(--text-main) placeholder:text-(--text-muted) focus:outline-none"
                         disabled={isLoading}
                     />

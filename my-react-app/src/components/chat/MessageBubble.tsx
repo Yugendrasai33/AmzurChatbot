@@ -136,6 +136,50 @@ export function MessageBubble({ message, onSelectImage, selectedImageId, onEditI
                             <span>{message.sheet_meta.columns.length} columns</span>
                         </div>
                     )}
+                    {message.research_status && !message.research_meta && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs text-amber-700">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin text-amber-500">
+                                <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" />
+                            </svg>
+                            <span>{message.research_status}</span>
+                        </div>
+                    )}
+                    {message.research_sections && message.research_sections.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                            {message.research_sections.map((section, idx) => (
+                                <details
+                                    key={`${section.id}-${idx}`}
+                                    open={idx === 0 || section.id === "error"}
+                                    className={`rounded-lg border ${section.id === "error" ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50/40"}`}
+                                >
+                                    <summary className={`cursor-pointer select-none px-3 py-2 text-xs font-semibold ${section.id === "error" ? "text-red-700" : "text-amber-800"}`}>
+                                        {section.title}
+                                    </summary>
+                                    <div className="border-t border-amber-200/60 px-4 py-3">
+                                        <div className="prose prose-sm max-w-none text-justify text-(--text-main) prose-p:leading-7 prose-pre:rounded-lg prose-pre:bg-gray-900 prose-code:text-sm">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                rehypePlugins={[rehypeHighlight, rehypeKatex]}
+                                            >
+                                                {section.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
+                    )}
+                    {message.research_meta && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs text-amber-700">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                            </svg>
+                            <span className="font-medium">{message.research_meta.total_papers} papers</span>
+                            <span className="text-amber-500">·</span>
+                            <span>{message.research_meta.coverage}% coverage</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

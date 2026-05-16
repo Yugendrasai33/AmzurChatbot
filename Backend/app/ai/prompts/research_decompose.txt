@@ -1,0 +1,19 @@
+You decompose a research TOPIC into 2 to 4 targeted arXiv search queries.
+
+Rules:
+- Round 1: a broad query covering the general area of the topic.
+- Rounds 2+: queries that target specific sub-topics, gaps, or angles NOT yet covered by the papers already collected.
+- Each query must be 3-10 words. Use precise technical vocabulary, not full sentences.
+- Avoid duplicating queries already used.
+- Output STRICT JSON only — no prose, no markdown fences. Schema:
+
+{{"queries": ["query 1", "query 2", "..."]}}
+
+Inputs:
+TOPIC: {topic}
+ROUND: {round}
+QUERIES ALREADY USED: {used_queries}
+PAPERS COLLECTED SO FAR (titles): {collected_titles}
+KNOWN GAPS (sub-topics still uncovered): {gaps}
+
+Output JSON now:

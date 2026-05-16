@@ -28,6 +28,31 @@ export interface SheetMetaData {
     columns: string[];
 }
 
+export type ResearchSectionId =
+    | "overview"
+    | "key_papers"
+    | "themes"
+    | "gaps"
+    | "future"
+    | "references"
+    | "error";
+
+export interface ResearchSection {
+    id: ResearchSectionId;
+    title: string;
+    content: string;
+}
+
+export interface ResearchMeta {
+    total_papers: number;
+    coverage: number;
+}
+
+export type ResearchEvent =
+    | { event: "status"; message: string }
+    | { event: "section"; id: ResearchSectionId; title: string; content: string }
+    | { event: "done"; total_papers: number; coverage: number };
+
 export interface ChatMessage {
     id: string;
     role: "user" | "assistant";
@@ -40,6 +65,9 @@ export interface ChatMessage {
     sql_query?: string;
     sql_result?: SqlResultData;
     sheet_meta?: SheetMetaData;
+    research_sections?: ResearchSection[];
+    research_meta?: ResearchMeta;
+    research_status?: string;
 }
 
 export interface ChatRequest {
@@ -106,4 +134,9 @@ export interface SheetsQueryRequest {
     source_type: string;
     sheet_url?: string;
     attachment_id?: string;
+}
+
+export interface ResearchRequest {
+    thread_id: string;
+    topic: string;
 }

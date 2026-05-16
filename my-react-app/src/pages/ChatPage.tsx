@@ -20,10 +20,12 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
         ragMode,
         sqlMode,
         sheetsMode,
+        researchMode,
         sendMessage,
         sendRagMessage,
         sendSqlMessage,
         sendSheetsMessage,
+        sendResearchMessage,
         generateImage,
         editImage,
         loadThreads,
@@ -34,6 +36,7 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
         toggleRagMode,
         toggleSqlMode,
         toggleSheetsMode,
+        toggleResearchMode,
     } = useChat();
 
     const [renameModalThreadId, setRenameModalThreadId] = useState<string | null>(null);
@@ -162,6 +165,13 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                                 <button onClick={toggleSheetsMode} className="ml-1 text-green-400 hover:text-green-700">×</button>
                             </span>
                         )}
+                        {researchMode && (
+                            <span className="flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                                Research mode
+                                <button onClick={toggleResearchMode} className="ml-1 text-amber-400 hover:text-amber-700">×</button>
+                            </span>
+                        )}
                     </div>
                 </header>
 
@@ -179,7 +189,13 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                     onEditImage={editImage}
                 />
                 <InputBar
-                    onSend={sheetsMode ? (msg: string) => sendSheetsMessage(msg, "google_sheet") : (sqlMode ? sendSqlMessage : (ragMode ? sendRagMessage : sendMessage))}
+                    onSend={
+                        researchMode
+                            ? sendResearchMessage
+                            : sheetsMode
+                                ? (msg: string) => sendSheetsMessage(msg, "google_sheet")
+                                : (sqlMode ? sendSqlMessage : (ragMode ? sendRagMessage : sendMessage))
+                    }
                     onGenerateImage={generateImage}
                     onEditImage={editImage}
                     selectedImageId={selectedImageId}
@@ -192,6 +208,8 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                     sheetsMode={sheetsMode}
                     onToggleSheets={toggleSheetsMode}
                     onSendSheets={(msg, sourceType, sheetUrl) => sendSheetsMessage(msg, sourceType, sheetUrl)}
+                    researchMode={researchMode}
+                    onToggleResearch={toggleResearchMode}
                 />
             </section>
 
