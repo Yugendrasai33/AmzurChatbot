@@ -20,6 +20,7 @@ interface InputBarProps {
     onSendSheets?: (message: string, sourceType: string, sheetUrl?: string) => void;
     researchMode?: boolean;
     onToggleResearch?: () => void;
+    onOpenGame?: () => void;
 }
 
 export function InputBar({
@@ -38,6 +39,7 @@ export function InputBar({
     onSendSheets,
     researchMode,
     onToggleResearch,
+    onOpenGame,
 }: InputBarProps) {
     const [input, setInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);
@@ -174,6 +176,7 @@ export function InputBar({
                                 onDbQuery={onToggleSql ?? (() => { })}
                                 onSheetAnalyze={onToggleSheets ?? (() => { })}
                                 onResearch={onToggleResearch ?? (() => { })}
+                                onOpenGame={onOpenGame}
                                 onClose={() => setPopoverOpen(false)}
                                 ragMode={ragMode}
                                 sqlMode={sqlMode}

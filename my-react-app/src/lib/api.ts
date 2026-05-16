@@ -425,4 +425,29 @@ export const researchApi = {
     },
 };
 
+// ── Tic Tac Toe Game API ──
+
+export const gameApi = {
+    startGame: async (difficulty: string = "hard") => {
+        const { data } = await api.post<import("../types").GameStartResponse>("/game/start", { difficulty });
+        return data;
+    },
+    makeMove: async (gameId: string, row: number, col: number) => {
+        const { data } = await api.post<import("../types").GameMoveResponse>("/game/move", {
+            game_id: gameId,
+            row,
+            col,
+        });
+        return data;
+    },
+    restartGame: async (gameId: string) => {
+        const { data } = await api.post<import("../types").GameStartResponse>(`/game/restart/${gameId}`);
+        return data;
+    },
+    getHistory: async () => {
+        const { data } = await api.get<import("../types").GameScoreResponse>("/game/history");
+        return data;
+    },
+};
+
 export default api;

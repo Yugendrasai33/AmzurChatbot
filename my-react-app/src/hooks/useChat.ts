@@ -53,6 +53,10 @@ export function useChat() {
         setSelectedThreadId(null);
         setMessages([]);
         setErrorMessage(null);
+        setRagMode(false);
+        setSqlMode(false);
+        setSheetsMode(false);
+        setResearchMode(false);
     }, []);
 
     const renameThread = useCallback(async (threadId: string, title: string) => {

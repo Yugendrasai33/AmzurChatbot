@@ -140,3 +140,47 @@ export interface ResearchRequest {
     thread_id: string;
     topic: string;
 }
+
+// ── Tic Tac Toe Game ──
+
+export interface GameStartResponse {
+    game_id: string;
+    board: string[][];
+    current_turn: string;
+    status: string;
+    message: string;
+}
+
+export interface AIMoveInfo {
+    row: number;
+    col: number;
+    reason: string;
+}
+
+export interface GameMoveResponse {
+    game_id: string;
+    board: string[][];
+    current_turn: string;
+    status: string;
+    winner: string | null;
+    ai_move: AIMoveInfo | null;
+    message: string;
+    move_number: number;
+}
+
+export interface GameHistoryEntry {
+    game_id: string;
+    result: "win" | "loss" | "draw";
+    moves: number;
+    difficulty: string;
+    started_at: string;
+    finished_at: string | null;
+}
+
+export interface GameScoreResponse {
+    wins: number;
+    losses: number;
+    draws: number;
+    total_games: number;
+    history: GameHistoryEntry[];
+}

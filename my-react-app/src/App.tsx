@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ChatPage from "./pages/ChatPage";
+import GamePage from "./pages/GamePage";
 import LoginPage from "./pages/LoginPage";
 import { authApi } from "./lib/api";
 import { type AuthUser } from "./types";
@@ -8,6 +9,7 @@ function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [page, setPage] = useState<"chat" | "game">("chat");
 
   useEffect(() => {
     const boot = async () => {
@@ -69,11 +71,15 @@ function App() {
     return <LoginPage initialError={authError} onAuthenticated={(_, authUser) => setUser(authUser)} />;
   }
 
+  if (page === "game") {
+    return <GamePage user={user} onBack={() => setPage("chat")} />;
+  }
+
   return <ChatPage user={user} onLogout={() => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     setUser(null);
-  }} />;
+  }} onOpenGame={() => setPage("game")} />;
 }
 
 export default App

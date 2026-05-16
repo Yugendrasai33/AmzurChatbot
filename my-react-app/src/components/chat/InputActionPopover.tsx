@@ -8,6 +8,7 @@ interface InputActionPopoverProps {
     onDbQuery: () => void;
     onSheetAnalyze: () => void;
     onResearch: () => void;
+    onOpenGame?: () => void;
     onClose: () => void;
     ragMode?: boolean;
     sqlMode?: boolean;
@@ -23,6 +24,7 @@ export function InputActionPopover({
     onDbQuery,
     onSheetAnalyze,
     onResearch,
+    onOpenGame,
     onClose,
     ragMode,
     sqlMode,
@@ -172,6 +174,22 @@ export function InputActionPopover({
                 Research papers
                 {researchMode && <span className="ml-auto text-xs text-amber-400">✓</span>}
             </button>
+            {onOpenGame && (
+                <>
+                    <div className="mx-2 h-px bg-(--line)" />
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { onOpenGame(); onClose(); }}
+                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm text-(--text-main) transition hover:bg-(--surface-soft)"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-(--text-muted)">
+                            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                        Tic Tac Toe
+                    </button>
+                </>
+            )}
         </div>
     );
 }

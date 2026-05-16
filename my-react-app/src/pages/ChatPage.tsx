@@ -7,9 +7,10 @@ import { type AuthUser } from "../types";
 interface ChatPageProps {
     user: AuthUser;
     onLogout: () => void;
+    onOpenGame: () => void;
 }
 
-export default function ChatPage({ user, onLogout }: ChatPageProps) {
+export default function ChatPage({ user, onLogout, onOpenGame }: ChatPageProps) {
     const {
         messages,
         threads,
@@ -210,6 +211,7 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                     onSendSheets={(msg, sourceType, sheetUrl) => sendSheetsMessage(msg, sourceType, sheetUrl)}
                     researchMode={researchMode}
                     onToggleResearch={toggleResearchMode}
+                    onOpenGame={onOpenGame}
                 />
             </section>
 

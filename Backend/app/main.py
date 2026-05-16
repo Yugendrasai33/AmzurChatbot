@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
+from app.api.game import router as game_router
 from app.api.rag import router as rag_router
 from app.api.research import router as research_router
 from app.api.sheets import router as sheets_router
@@ -29,6 +30,7 @@ app.add_middleware(
 # Routers
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(game_router)
 app.include_router(rag_router)
 app.include_router(research_router)
 app.include_router(sheets_router)
