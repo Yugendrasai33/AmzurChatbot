@@ -38,6 +38,15 @@ unstructured[xlsx]
 # Synchronous DB driver for LangChain SQL agent
 psycopg2-binary
 
+# Google Sheets & Pandas Agent
+gspread
+google-auth
+google-api-python-client
+pandas
+tabulate
+langchain-experimental
+cachetools
+
 # Validation
 pydantic
 

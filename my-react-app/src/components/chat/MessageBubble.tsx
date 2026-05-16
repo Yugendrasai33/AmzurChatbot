@@ -123,6 +123,19 @@ export function MessageBubble({ message, onSelectImage, selectedImageId, onEditI
                             </div>
                         </div>
                     )}
+                    {message.sheet_meta && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-green-50 border border-green-200 px-2.5 py-1.5 text-xs text-green-700">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="3" y1="15" x2="21" y2="15" />
+                                <line x1="9" y1="3" x2="9" y2="21" />
+                            </svg>
+                            <span className="font-medium">{message.sheet_meta.rows} rows</span>
+                            <span className="text-green-500">·</span>
+                            <span>{message.sheet_meta.columns.length} columns</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

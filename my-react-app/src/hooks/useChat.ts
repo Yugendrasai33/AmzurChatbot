@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import axios from "axios";
-import { chatApi, ragApi, sqlApi } from "../lib/api";
+import { chatApi, ragApi, sqlApi, sheetsApi } from "../lib/api";
 import { type AttachmentMeta, type ChatMessage, type Thread } from "../types";
 
 export function useChat() {
@@ -12,6 +12,7 @@ export function useChat() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [ragMode, setRagMode] = useState(false);
     const [sqlMode, setSqlMode] = useState(false);
+    const [sheetsMode, setSheetsMode] = useState(false);
     const hasAutoSelectedInitialThread = useRef(false);
     const skipNextLoadRef = useRef(false);
 
@@ -155,14 +156,21 @@ export function useChat() {
 
     const toggleRagMode = useCallback(() => {
         setRagMode((prev) => {
-            if (!prev) setSqlMode(false);
+            if (!prev) { setSqlMode(false); setSheetsMode(false); }
             return !prev;
         });
     }, []);
 
     const toggleSqlMode = useCallback(() => {
         setSqlMode((prev) => {
-            if (!prev) setRagMode(false);
+            if (!prev) { setRagMode(false); setSheetsMode(false); }
+            return !prev;
+        });
+    }, []);
+
+    const toggleSheetsMode = useCallback(() => {
+        setSheetsMode((prev) => {
+            if (!prev) { setRagMode(false); setSqlMode(false); }
             return !prev;
         });
     }, []);
@@ -356,6 +364,103 @@ export function useChat() {
         }
     }, [selectedThreadId]);
 
+    const sendSheetsMessage = useCallback(async (
+        content: string,
+        sourceType: string,
+        sheetUrl?: string,
+        attachmentId?: string,
+    ) => {
+        let threadId = selectedThreadId;
+
+        if (!threadId) {
+            try {
+                const newThread = await chatApi.createThread({ title: content.slice(0, 50) });
+                threadId = newThread.id;
+                skipNextLoadRef.current = true;
+                setSelectedThreadId(threadId);
+                setThreads((prev) => [newThread, ...prev]);
+            } catch {
+                setErrorMessage("Failed to create a new thread.");
+                return;
+            }
+        }
+
+        const optimisticId = crypto.randomUUID();
+        const optimisticMessage: ChatMessage = {
+            id: optimisticId,
+            role: "user",
+            content,
+        };
+        setMessages((prev) => [...prev, optimisticMessage]);
+        setIsLoading(true);
+        setErrorMessage(null);
+
+        try {
+            const assistantId = crypto.randomUUID();
+            const assistantMessage: ChatMessage = {
+                id: assistantId,
+                role: "assistant",
+                content: "",
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+
+            await sheetsApi.streamQuery(
+                threadId,
+                content,
+                sourceType,
+                (token) => {
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.id === assistantId
+                                ? { ...m, content: m.content + token }
+                                : m
+                        )
+                    );
+                },
+                (meta) => {
+                    setMessages((prev) =>
+                        prev.map((m) =>
+                            m.id === assistantId
+                                ? { ...m, sheet_meta: meta }
+                                : m
+                        )
+                    );
+                },
+                sheetUrl,
+                attachmentId,
+            );
+
+            const latestThreads = await chatApi.listThreads();
+            setThreads(latestThreads);
+        } catch (error) {
+            const fallbackMessage = "Spreadsheet analysis failed. Please try again.";
+            let nextError = fallbackMessage;
+
+            if (error instanceof Error) {
+                nextError = error.message || fallbackMessage;
+            } else if (axios.isAxiosError(error)) {
+                const detail = error.response?.data?.detail;
+                if (typeof detail === "string") {
+                    nextError = detail;
+                } else if (detail && typeof detail === "object") {
+                    nextError = detail.message ?? detail.error ?? fallbackMessage;
+                }
+            }
+
+            setErrorMessage(nextError);
+            setMessages((prev) => [
+                ...prev.filter((m) => m.content !== ""),
+                {
+                    id: crypto.randomUUID(),
+                    role: "assistant" as const,
+                    content: nextError,
+                },
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedThreadId]);
+
     const generateImage = useCallback(async (prompt: string) => {
         const cleaned = prompt.trim();
         if (!cleaned) return;
@@ -481,9 +586,11 @@ export function useChat() {
         errorMessage,
         ragMode,
         sqlMode,
+        sheetsMode,
         sendMessage,
         sendRagMessage,
         sendSqlMessage,
+        sendSheetsMessage,
         generateImage,
         editImage,
         clearMessages,
@@ -494,5 +601,6 @@ export function useChat() {
         deleteThread,
         toggleRagMode,
         toggleSqlMode,
+        toggleSheetsMode,
     };
 }

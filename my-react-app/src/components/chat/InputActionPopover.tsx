@@ -6,9 +6,11 @@ interface InputActionPopoverProps {
     onGenerateImage: () => void;
     onDocSearch: () => void;
     onDbQuery: () => void;
+    onSheetAnalyze: () => void;
     onClose: () => void;
     ragMode?: boolean;
     sqlMode?: boolean;
+    sheetsMode?: boolean;
 }
 
 export function InputActionPopover({
@@ -17,9 +19,11 @@ export function InputActionPopover({
     onGenerateImage,
     onDocSearch,
     onDbQuery,
+    onSheetAnalyze,
     onClose,
     ragMode,
     sqlMode,
+    sheetsMode,
 }: InputActionPopoverProps) {
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +69,11 @@ export function InputActionPopover({
 
     const handleDbQuery = () => {
         onDbQuery();
+        onClose();
+    };
+
+    const handleSheetAnalyze = () => {
+        onSheetAnalyze();
         onClose();
     };
 
@@ -122,6 +131,23 @@ export function InputActionPopover({
                 </svg>
                 Query database
                 {sqlMode && <span className="ml-auto text-xs text-indigo-400">✓</span>}
+            </button>
+            <div className="mx-2 h-px bg-(--line)" />
+            <button
+                type="button"
+                role="menuitem"
+                onClick={handleSheetAnalyze}
+                className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-(--surface-soft) ${sheetsMode ? "text-green-600 font-medium" : "text-(--text-main)"}`}
+            >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={sheetsMode ? "text-green-500" : "text-(--text-muted)"}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="3" y1="15" x2="21" y2="15" />
+                    <line x1="9" y1="3" x2="9" y2="21" />
+                    <line x1="15" y1="3" x2="15" y2="21" />
+                </svg>
+                Analyze spreadsheet
+                {sheetsMode && <span className="ml-auto text-xs text-green-400">✓</span>}
             </button>
         </div>
     );

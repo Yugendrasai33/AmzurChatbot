@@ -19,9 +19,11 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
         errorMessage,
         ragMode,
         sqlMode,
+        sheetsMode,
         sendMessage,
         sendRagMessage,
         sendSqlMessage,
+        sendSheetsMessage,
         generateImage,
         editImage,
         loadThreads,
@@ -31,6 +33,7 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
         deleteThread,
         toggleRagMode,
         toggleSqlMode,
+        toggleSheetsMode,
     } = useChat();
 
     const [renameModalThreadId, setRenameModalThreadId] = useState<string | null>(null);
@@ -152,6 +155,13 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                                 <button onClick={toggleSqlMode} className="ml-1 text-indigo-400 hover:text-indigo-700">×</button>
                             </span>
                         )}
+                        {sheetsMode && (
+                            <span className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="3" x2="9" y2="21" /></svg>
+                                Spreadsheet mode
+                                <button onClick={toggleSheetsMode} className="ml-1 text-green-400 hover:text-green-700">×</button>
+                            </span>
+                        )}
                     </div>
                 </header>
 
@@ -169,7 +179,7 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                     onEditImage={editImage}
                 />
                 <InputBar
-                    onSend={sqlMode ? sendSqlMessage : (ragMode ? sendRagMessage : sendMessage)}
+                    onSend={sheetsMode ? (msg: string) => sendSheetsMessage(msg, "google_sheet") : (sqlMode ? sendSqlMessage : (ragMode ? sendRagMessage : sendMessage))}
                     onGenerateImage={generateImage}
                     onEditImage={editImage}
                     selectedImageId={selectedImageId}
@@ -179,6 +189,9 @@ export default function ChatPage({ user, onLogout }: ChatPageProps) {
                     onToggleRag={toggleRagMode}
                     sqlMode={sqlMode}
                     onToggleSql={toggleSqlMode}
+                    sheetsMode={sheetsMode}
+                    onToggleSheets={toggleSheetsMode}
+                    onSendSheets={(msg, sourceType, sheetUrl) => sendSheetsMessage(msg, sourceType, sheetUrl)}
                 />
             </section>
 

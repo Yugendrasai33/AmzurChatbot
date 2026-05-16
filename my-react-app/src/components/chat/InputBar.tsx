@@ -15,6 +15,9 @@ interface InputBarProps {
     onToggleRag?: () => void;
     sqlMode?: boolean;
     onToggleSql?: () => void;
+    sheetsMode?: boolean;
+    onToggleSheets?: () => void;
+    onSendSheets?: (message: string, sourceType: string, sheetUrl?: string) => void;
 }
 
 export function InputBar({
@@ -28,11 +31,15 @@ export function InputBar({
     onToggleRag,
     sqlMode,
     onToggleSql,
+    sheetsMode,
+    onToggleSheets,
+    onSendSheets,
 }: InputBarProps) {
     const [input, setInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [generateMode, setGenerateMode] = useState(false);
+    const [sheetUrl, setSheetUrl] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const plusButtonRef = useRef<HTMLButtonElement>(null);
     const textInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +79,14 @@ export function InputBar({
         setFiles([]);
     };
 
+    const handleSheetsSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        const trimmed = input.trim();
+        if (!trimmed || isLoading || !onSendSheets) return;
+        onSendSheets(trimmed, "google_sheet", sheetUrl.trim() || undefined);
+        setInput("");
+    };
+
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
         const selected = Array.from(e.target.files);
@@ -101,8 +116,21 @@ export function InputBar({
     }, []);
 
     return (
-        <form onSubmit={handleSubmit} className="border-t border-(--line) bg-white px-4 py-4 sm:px-6">
+        <form onSubmit={sheetsMode ? handleSheetsSubmit : handleSubmit} className="border-t border-(--line) bg-white px-4 py-4 sm:px-6">
             <div className="mx-auto w-full max-w-3xl">
+                {/* Sheet URL input */}
+                {sheetsMode && (
+                    <div className="mb-2">
+                        <input
+                            type="url"
+                            value={sheetUrl}
+                            onChange={(e) => setSheetUrl(e.target.value)}
+                            placeholder="Paste Google Sheet URL (must be shared with the service account)…"
+                            className="w-full rounded-lg border border-green-200 bg-green-50/50 px-3 py-2 text-sm text-(--text-main) placeholder:text-green-400 focus:border-green-400 focus:outline-none"
+                        />
+                    </div>
+                )}
+
                 {/* Selected image indicator */}
                 {selectedImageId && (
                     <div className="mb-2 flex items-center gap-2 rounded-lg bg-(--surface-soft) px-3 py-2 text-xs text-(--text-soft)">
@@ -140,9 +168,11 @@ export function InputBar({
                                 onGenerateImage={handleGenerateImageAction}
                                 onDocSearch={onToggleRag ?? (() => { })}
                                 onDbQuery={onToggleSql ?? (() => { })}
+                                onSheetAnalyze={onToggleSheets ?? (() => { })}
                                 onClose={() => setPopoverOpen(false)}
                                 ragMode={ragMode}
                                 sqlMode={sqlMode}
+                                sheetsMode={sheetsMode}
                             />
                         )}
                     </div>
@@ -195,6 +225,27 @@ export function InputBar({
                         </div>
                     )}
 
+                    {/* Sheets mode tag */}
+                    {sheetsMode && !selectedImageId && !generateMode && (
+                        <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-2.5 py-1">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="3" y1="15" x2="21" y2="15" />
+                                <line x1="9" y1="3" x2="9" y2="21" />
+                            </svg>
+                            <span className="text-xs font-medium text-green-700">Analyze spreadsheet</span>
+                            <button
+                                type="button"
+                                onClick={onToggleSheets}
+                                className="ml-0.5 text-green-400 hover:text-green-700"
+                                aria-label="Exit sheets mode"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
                     {/* Generate image mode tag */}
                     {generateMode && !selectedImageId && (
                         <div className="flex shrink-0 items-center gap-1 rounded-md bg-purple-50 px-2 py-1">
@@ -219,11 +270,13 @@ export function InputBar({
                             ? "Describe what to change…"
                             : (generateMode
                                 ? "Describe the image to generate…"
-                                : (sqlMode
-                                    ? "Ask a question about the database…"
-                                    : (ragMode
-                                        ? "Ask about your documents…"
-                                        : "Message Amzur AI…")))}
+                                : (sheetsMode
+                                    ? "Ask a question about the spreadsheet…"
+                                    : (sqlMode
+                                        ? "Ask a question about the database…"
+                                        : (ragMode
+                                            ? "Ask about your documents…"
+                                            : "Message Amzur AI…"))))}
                         className="min-h-9 flex-1 bg-transparent px-1 text-sm text-(--text-main) placeholder:text-(--text-muted) focus:outline-none"
                         disabled={isLoading}
                     />

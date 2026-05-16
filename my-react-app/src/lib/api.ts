@@ -8,6 +8,7 @@ import {
     type ImageEditRequest,
     type ImageGenerationRequest,
     type IngestResponse,
+    type SheetMetaData,
     type SqlResultData,
     type Thread,
 } from "../types";
@@ -236,6 +237,79 @@ export const sqlApi = {
                     continue;
                 }
                 onToken(payload);
+            }
+        }
+    },
+};
+
+export const sheetsApi = {
+    streamQuery: async (
+        threadId: string,
+        question: string,
+        sourceType: string,
+        onToken: (t: string) => void,
+        onSheetMeta?: (meta: SheetMetaData) => void,
+        sheetUrl?: string,
+        attachmentId?: string,
+    ) => {
+        const token = localStorage.getItem("auth_token");
+        const response = await fetch("/api/sheets/query", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                thread_id: threadId,
+                question,
+                source_type: sourceType,
+                sheet_url: sheetUrl ?? null,
+                attachment_id: attachmentId ?? null,
+            }),
+        });
+
+        if (!response.ok) {
+            const detail = await response.json().then((d) => d.detail).catch(() => null);
+            const msg = typeof detail === "string"
+                ? detail
+                : detail?.message ?? "Spreadsheet query failed.";
+            throw new Error(msg);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response stream available.");
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const payload = line.slice(6);
+                if (payload === "[DONE]") return;
+                if (payload.startsWith("[ERROR] ")) {
+                    throw new Error(payload.slice(8));
+                }
+                if (payload.includes("[SHEET_META]")) {
+                    const idx = payload.indexOf("[SHEET_META]");
+                    const textBefore = payload.slice(0, idx);
+                    if (textBefore) onToken(textBefore);
+                    const metaJson = payload.slice(idx + "[SHEET_META]".length);
+                    try {
+                        const meta = JSON.parse(metaJson) as SheetMetaData;
+                        if (onSheetMeta) onSheetMeta(meta);
+                    } catch { /* ignore */ }
+                    continue;
+                }
+                onToken(payload + "\n");
             }
         }
     },

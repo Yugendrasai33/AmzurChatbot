@@ -23,6 +23,11 @@ export interface SqlResultData {
     rows: string[][];
 }
 
+export interface SheetMetaData {
+    rows: number;
+    columns: string[];
+}
+
 export interface ChatMessage {
     id: string;
     role: "user" | "assistant";
@@ -34,6 +39,7 @@ export interface ChatMessage {
     sources?: string[];
     sql_query?: string;
     sql_result?: SqlResultData;
+    sheet_meta?: SheetMetaData;
 }
 
 export interface ChatRequest {
@@ -92,4 +98,12 @@ export interface SqlQueryResponse {
     answer: string;
     sql_query: string;
     thread_id: string;
+}
+
+export interface SheetsQueryRequest {
+    thread_id: string;
+    question: string;
+    source_type: string;
+    sheet_url?: string;
+    attachment_id?: string;
 }
