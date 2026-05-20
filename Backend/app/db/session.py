@@ -32,7 +32,10 @@ if not settings.DATABASE_URL:
 DATABASE_URL = _normalize_database_url(settings.DATABASE_URL)
 
 try:
-    engine = create_async_engine(DATABASE_URL, future=True, echo=False, pool_pre_ping=True)
+    engine = create_async_engine(
+        DATABASE_URL, future=True, echo=False, pool_pre_ping=True,
+        connect_args={"timeout": 10, "statement_cache_size": 0},
+    )
     SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 except Exception as e:
     print(f"Warning: Failed to initialize database engine: {e}")
