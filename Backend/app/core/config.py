@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     # Conversational memory
     MEMORY_WINDOW_SIZE: int = 5  # number of recent exchanges sent to LLM
 
+    # MCP Server
+    MCP_SERVER_NAME: str = "amzur-ai-tools"
+
     # File uploads
     MAX_UPLOAD_MB: int = 20
     UPLOAD_DIR: str = "./uploads"

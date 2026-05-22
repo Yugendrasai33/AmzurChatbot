@@ -50,6 +50,9 @@ cachetools
 # Validation
 pydantic
 
+# MCP - Project 12
+fastmcp>=2.0.0
+
 # Testing
 pytest
 pytest-asyncio
