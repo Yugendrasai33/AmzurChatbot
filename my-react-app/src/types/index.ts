@@ -184,3 +184,35 @@ export interface GameScoreResponse {
     total_games: number;
     history: GameHistoryEntry[];
 }
+
+// ── Support Tickets (n8n Sidecar) ──
+
+export interface TicketCreateRequest {
+    message: string;
+    thread_id?: string;
+}
+
+export interface TicketCreateResponse {
+    success: boolean;
+    ticket_id: string;
+    category: string;
+    priority: string;
+    assigned_team: string;
+    status: string;
+    summary: string;
+}
+
+export interface TicketListItem {
+    id: string;
+    ticket_id: string;
+    user_email: string;
+    issue: string;
+    category: string;
+    priority: string;
+    status: string;
+    assigned_team: string | null;
+    created_at: string;
+    updated_at: string;
+    thread_id: string | null;
+    next_action: string | null;
+}

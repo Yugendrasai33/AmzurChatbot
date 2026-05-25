@@ -21,6 +21,7 @@ interface InputBarProps {
     researchMode?: boolean;
     onToggleResearch?: () => void;
     onOpenGame?: () => void;
+    onOpenTickets?: () => void;
 }
 
 export function InputBar({
@@ -40,6 +41,7 @@ export function InputBar({
     researchMode,
     onToggleResearch,
     onOpenGame,
+    onOpenTickets,
 }: InputBarProps) {
     const [input, setInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);
@@ -177,6 +179,7 @@ export function InputBar({
                                 onSheetAnalyze={onToggleSheets ?? (() => { })}
                                 onResearch={onToggleResearch ?? (() => { })}
                                 onOpenGame={onOpenGame}
+                                onOpenTickets={onOpenTickets}
                                 onClose={() => setPopoverOpen(false)}
                                 ragMode={ragMode}
                                 sqlMode={sqlMode}

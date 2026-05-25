@@ -8,9 +8,11 @@ interface ChatPageProps {
     user: AuthUser;
     onLogout: () => void;
     onOpenGame: () => void;
+    onOpenTickets: () => void;
+    onThreadChange?: (threadId: string | null) => void;
 }
 
-export default function ChatPage({ user, onLogout, onOpenGame }: ChatPageProps) {
+export default function ChatPage({ user, onLogout, onOpenGame, onOpenTickets, onThreadChange }: ChatPageProps) {
     const {
         messages,
         threads,
@@ -54,7 +56,8 @@ export default function ChatPage({ user, onLogout, onOpenGame }: ChatPageProps) 
             void loadMessages(selectedThreadId);
             setSelectedImageId(null);
         }
-    }, [selectedThreadId, loadMessages]);
+        onThreadChange?.(selectedThreadId ?? null);
+    }, [selectedThreadId, loadMessages, onThreadChange]);
 
     const handleSelectImage = (attachmentId: string) => {
         setSelectedImageId((prev) => (prev === attachmentId ? null : attachmentId));
@@ -212,6 +215,7 @@ export default function ChatPage({ user, onLogout, onOpenGame }: ChatPageProps) 
                     researchMode={researchMode}
                     onToggleResearch={toggleResearchMode}
                     onOpenGame={onOpenGame}
+                    onOpenTickets={onOpenTickets}
                 />
             </section>
 

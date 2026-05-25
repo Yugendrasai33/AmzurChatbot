@@ -21,6 +21,7 @@ from app.api.research import router as research_router
 from app.api.sheets import router as sheets_router
 from app.api.sql import router as sql_router
 from app.api.threads import router as threads_router
+from app.api.tickets import router as tickets_router
 from app.db.bootstrap import ensure_tables
 from app.db.session import engine
 
@@ -48,6 +49,7 @@ app.include_router(research_router)
 app.include_router(sheets_router)
 app.include_router(sql_router)
 app.include_router(threads_router)
+app.include_router(tickets_router)
 
 
 @app.on_event("startup")

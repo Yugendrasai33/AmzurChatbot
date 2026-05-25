@@ -15,6 +15,8 @@ import {
     type SheetMetaData,
     type SqlResultData,
     type Thread,
+    type TicketCreateResponse,
+    type TicketListItem,
 } from "../types";
 
 const api = axios.create({
@@ -446,6 +448,26 @@ export const gameApi = {
     },
     getHistory: async () => {
         const { data } = await api.get<import("../types").GameScoreResponse>("/game/history");
+        return data;
+    },
+};
+
+// ── Support Tickets (n8n Sidecar) ──
+
+export const ticketsApi = {
+    create: async (message: string, threadId?: string): Promise<TicketCreateResponse> => {
+        const { data } = await api.post<TicketCreateResponse>("/tickets/create", {
+            message,
+            thread_id: threadId,
+        });
+        return data;
+    },
+    list: async (): Promise<TicketListItem[]> => {
+        const { data } = await api.get<TicketListItem[]>("/tickets");
+        return data;
+    },
+    get: async (ticketId: string): Promise<TicketListItem> => {
+        const { data } = await api.get<TicketListItem>(`/tickets/${ticketId}`);
         return data;
     },
 };

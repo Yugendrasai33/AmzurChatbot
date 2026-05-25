@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ChatPage from "./pages/ChatPage";
 import GamePage from "./pages/GamePage";
 import LoginPage from "./pages/LoginPage";
+import TicketsPage from "./pages/TicketsPage";
 import { authApi } from "./lib/api";
 import { type AuthUser } from "./types";
 
@@ -9,7 +10,8 @@ function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [page, setPage] = useState<"chat" | "game">("chat");
+  const [page, setPage] = useState<"chat" | "game" | "tickets">("chat");
+  const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
 
   useEffect(() => {
     const boot = async () => {
@@ -75,11 +77,15 @@ function App() {
     return <GamePage user={user} onBack={() => setPage("chat")} />;
   }
 
+  if (page === "tickets") {
+    return <TicketsPage user={user} onBack={() => setPage("chat")} threadId={currentThreadId} />;
+  }
+
   return <ChatPage user={user} onLogout={() => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     setUser(null);
-  }} onOpenGame={() => setPage("game")} />;
+  }} onOpenGame={() => setPage("game")} onOpenTickets={() => setPage("tickets")} onThreadChange={setCurrentThreadId} />;
 }
 
 export default App

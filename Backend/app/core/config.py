@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     # MCP Server
     MCP_SERVER_NAME: str = "amzur-ai-tools"
 
+    # n8n Sidecar Automation
+    N8N_WEBHOOK_URL: Optional[str] = None
+    N8N_API_KEY: Optional[str] = None
+    N8N_STATUS_WEBHOOK_URL: Optional[str] = None
+
     # File uploads
     MAX_UPLOAD_MB: int = 20
     UPLOAD_DIR: str = "./uploads"
